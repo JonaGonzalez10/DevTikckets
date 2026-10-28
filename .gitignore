@@ -1,0 +1,6 @@
+.env
+target/
+dist/
+node_modules
+.angular
+.vscode
