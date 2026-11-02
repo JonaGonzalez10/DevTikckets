@@ -1,6 +1,45 @@
+# ---- Secretos y configuracion local ----
 .env
-target/
+.env.*
+!.env.example
+*.pem
+*.key
+*.jks
+*.p12
+application-local.properties
+application-*-local.properties
+
+# ---- Dependencias y compilados ----
+node_modules/
 dist/
-node_modules
-.angular
-.vscode
+.angular/
+target/
+build/
+out/
+coverage/
+
+# ---- Logs y temporales ----
+*.log
+npm-debug.log*
+tmp/
+*.tmp
+*.bak
+
+# ---- IDE y sistema operativo ----
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+
+# ---- Artefactos de herramientas de IA / modernizacion ----
+.github/modernize/
+
+# ---- Archivos comprimidos ----
+*.zip
+*.rar
+*.7z

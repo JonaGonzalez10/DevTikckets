@@ -1,0 +1,461 @@
+{
+  "info": {
+    "name": "DevTickets API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "API DevTickets. Servicio local en http://localhost:8080 (.\\run-local.ps1). Orden: registro/login -> eventos -> detalle -> asientos -> ordenes."
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "idFuncion",
+      "value": ""
+    },
+    {
+      "key": "idAsiento",
+      "value": ""
+    },
+    {
+      "key": "idOrden",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Autenticaci?n",
+      "item": [
+        {
+          "name": "Registro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/auth/registro",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "auth",
+                "registro"
+              ]
+            },
+            "description": "P?blico. 201 con token.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoElectronico\": \"cliente1@demo.com\",\n  \"contrasena\": \"Passw0rd!123\",\n  \"nombre\": \"Ana\",\n  \"apellido\": \"L?pez\",\n  \"telefono\": \"5512345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"token\", pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "P?blico. Guarda el token en {{token}} (dura 2 h).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correoElectronico\": \"cliente1@demo.com\",\n  \"contrasena\": \"Passw0rd!123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"token\", pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Cat?logo (p?blico)",
+      "item": [
+        {
+          "name": "Categor?as",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/categorias",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "categorias"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Eventos (todos)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/eventos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "eventos"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Eventos por categor?a",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/eventos?categoriaId=1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "eventos"
+              ],
+              "query": [
+                {
+                  "key": "categoriaId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Eventos por b?squeda",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/eventos?q=luz",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "eventos"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "luz"
+                }
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Eventos categor?a + b?squeda",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/eventos?categoriaId=1&q=norte",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "eventos"
+              ],
+              "query": [
+                {
+                  "key": "categoriaId",
+                  "value": "1"
+                },
+                {
+                  "key": "q",
+                  "value": "norte"
+                }
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Detalle de evento",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/eventos/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "eventos",
+                "1"
+              ]
+            },
+            "description": "Cambia el 1 por un id real de Eventos. Guarda idFuncion.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const f = pm.response.json().funciones;",
+                  "if (f.length) pm.collectionVariables.set(\"idFuncion\", f[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Asientos de una funci?n",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/funciones/{{idFuncion}}/asientos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "funciones",
+                "{{idFuncion}}",
+                "asientos"
+              ]
+            },
+            "description": "Guarda el primer asiento libre en idAsiento.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const libre = pm.response.json().find(a => a.disponible);",
+                  "if (libre) pm.collectionVariables.set(\"idAsiento\", libre.id);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. ?rdenes (requiere token)",
+      "item": [
+        {
+          "name": "Crear orden (comprar)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/ordenes",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "ordenes"
+              ]
+            },
+            "description": "Crea una reserva pendiente de hasta 10 minutos para 1 a 8 asientos de la misma funci?n.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idFuncion\": {{idFuncion}},\n  \"idsAsiento\": [{{idAsiento}}]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) pm.collectionVariables.set(\"idOrden\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirmar pago simulado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/ordenes/{{idOrden}}/pago",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "ordenes",
+                "{{idOrden}}",
+                "pago"
+              ]
+            },
+            "description": "Solo para pruebas. Se debe confirmar dentro de los 10 minutos posteriores a la reserva; no uses datos de una tarjeta real.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pago\": {\n    \"numeroTarjeta\": \"4111111111111111\",\n    \"titular\": \"Ana Lopez\",\n    \"expiracion\": \"12/29\",\n    \"cvv\": \"123\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Mis ?rdenes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/ordenes",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "ordenes"
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    }
+  ]
+}
