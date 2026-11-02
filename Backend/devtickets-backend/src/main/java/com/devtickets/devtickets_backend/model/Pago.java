@@ -23,6 +23,7 @@ import lombok.Setter;
 public class Pago {
 
     public static final String PROVEEDOR_SIMULADO = "SIMULADO";
+    public static final String ESTADO_PENDIENTE = "PENDIENTE";
     public static final String ESTADO_APROBADO = "APROBADO";
 
     @Id

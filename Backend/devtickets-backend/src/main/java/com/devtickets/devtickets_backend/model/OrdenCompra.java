@@ -27,6 +27,8 @@ import lombok.Setter;
 public class OrdenCompra {
 
     public static final String ESTADO_PAGADA = "PAGADA";
+    public static final String ESTADO_PENDIENTE = "PENDIENTE";
+    public static final String ESTADO_EXPIRADA = "EXPIRADA";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,6 +56,9 @@ public class OrdenCompra {
 
     @Column(name = "pagado_en")
     private LocalDateTime pagadoEn;
+
+    @Column(name = "expira_en")
+    private LocalDateTime expiraEn;
 
     @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL)
     private List<DetalleOrden> detalles = new ArrayList<>();

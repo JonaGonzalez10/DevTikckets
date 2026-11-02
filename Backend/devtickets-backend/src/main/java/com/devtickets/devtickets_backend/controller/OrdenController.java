@@ -22,6 +22,12 @@ public class OrdenController {
         return ordenService.crear(auth.getName(), request);
     }
 
+    @PostMapping("/{id}/pago")
+    public OrdenDto confirmarPago(
+            Authentication auth, @PathVariable Long id, @Valid @RequestBody ConfirmarPagoRequest request) {
+        return ordenService.confirmarPago(auth.getName(), id, request);
+    }
+
     @GetMapping
     public List<OrdenDto> listar(Authentication auth) {
         return ordenService.listar(auth.getName());
