@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 public interface AsientoFuncionRepository extends JpaRepository<AsientoFuncion, Long> {
 
     @Query("""
-            select a from AsientoFuncion a join fetch a.tipoEntrada
+            select a from AsientoFuncion a join fetch a.tipoEntrada left join fetch a.reserva
             where a.funcion.id = :idFuncion
             order by a.seccion, a.fila, a.numero
             """)
@@ -20,8 +20,44 @@ public interface AsientoFuncionRepository extends JpaRepository<AsientoFuncion, 
     @Query("select a from AsientoFuncion a join fetch a.tipoEntrada where a.id in :ids and a.funcion.id = :idFuncion")
     List<AsientoFuncion> findParaCompra(@Param("ids") Collection<Long> ids, @Param("idFuncion") Long idFuncion);
 
-    /** Marca como vendidos solo los que siguen disponibles; evita doble venta bajo concurrencia. */
+    @Query("""
+            select a from AsientoFuncion a join fetch a.tipoEntrada
+            where a.reserva.id = :idOrden
+            order by a.seccion, a.fila, a.numero
+            """)
+    List<AsientoFuncion> findByReservaId(@Param("idOrden") Long idOrden);
+
     @Modifying
-    @Query("update AsientoFuncion a set a.estado = 'VENDIDO' where a.id in :ids and a.estado = 'DISPONIBLE'")
-    int marcarVendidos(@Param("ids") Collection<Long> ids);
+    @Query(value = """
+            UPDATE asientos_funcion
+            SET estado = 'RESERVADO', id_orden_reserva = :idOrden
+            WHERE id_asiento IN (:ids) AND id_funcion = :idFuncion
+              AND (estado = 'DISPONIBLE'
+                OR (estado = 'RESERVADO' AND id_orden_reserva IN (
+                  SELECT id_orden FROM ordenes_compra WHERE estado = 'EXPIRADA'
+                )))
+            """, nativeQuery = true)
+    int reservarDisponibles(
+            @Param("ids") Collection<Long> ids,
+            @Param("idFuncion") Long idFuncion,
+            @Param("idOrden") Long idOrden);
+
+    @Modifying
+    @Query(value = """
+            UPDATE asientos_funcion
+            SET estado = 'DISPONIBLE', id_orden_reserva = NULL
+            WHERE estado = 'RESERVADO' AND id_orden_reserva IN (
+              SELECT id_orden FROM ordenes_compra WHERE estado = 'EXPIRADA'
+            )
+            """, nativeQuery = true)
+    int liberarReservasExpiradas();
+
+    /** Cambia a vendidos solamente los asientos que siguen reservados para esta orden. */
+    @Modifying
+    @Query(value = """
+            UPDATE asientos_funcion
+            SET estado = 'VENDIDO', id_orden_reserva = NULL
+            WHERE id_orden_reserva = :idOrden AND estado = 'RESERVADO'
+            """, nativeQuery = true)
+    int marcarVendidos(@Param("idOrden") Long idOrden);
 }

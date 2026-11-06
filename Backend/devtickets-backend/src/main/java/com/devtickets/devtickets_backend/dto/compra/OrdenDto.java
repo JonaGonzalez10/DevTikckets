@@ -8,6 +8,7 @@ public record OrdenDto(
         Long id,
         String numeroOrden,
         String estado,
+        Long idFuncion,
         String evento,
         LocalDateTime fechaFuncion,
         String recinto,
@@ -15,4 +16,5 @@ public record OrdenDto(
         String moneda,
         LocalDateTime pagadoEn,
         String referenciaPago,
-        List<EntradaDto> entradas) {}
+        List<EntradaDto> entradas,
+        LocalDateTime expiraEn) {}

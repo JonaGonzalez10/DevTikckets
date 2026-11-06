@@ -9,9 +9,11 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -25,14 +27,18 @@ public class CatalogoService {
     private final AsientoFuncionRepository asientoFuncionRepository;
 
     public List<CategoriaDto> categorias() {
-        return categoriaRepository.findAllByOrderByNombreAsc().stream()
+        List<CategoriaDto> resultado = categoriaRepository.findAllByOrderByNombreAsc().stream()
                 .map(c -> new CategoriaDto(c.getId(), c.getNombre()))
                 .toList();
+        log.debug("Categorias consultadas: total={}", resultado.size());
+        return resultado;
     }
 
     public List<EventoResumenDto> eventos(Long categoriaId, String q) {
         String texto = q == null ? "" : q.trim();
         List<Evento> eventos = eventoRepository.buscarPublicados(categoriaId, texto);
+        log.debug("Eventos publicados encontrados: total={}, filtroCategoria={}, conTexto={}",
+                eventos.size(), categoriaId, !texto.isEmpty());
         if (eventos.isEmpty()) {
             return List.of();
         }
@@ -46,9 +52,21 @@ public class CatalogoService {
         funcionEventoRepository.proximasPorEventos(ids, ahora())
                 .forEach(f -> proxima.putIfAbsent(f.getEvento().getId(), f));
 
+        Map<Long, List<TipoEntrada>> tiposPorFuncion = proxima.isEmpty() ? Map.of()
+                : tipoEntradaRepository
+                        .findByFuncionIdInOrderByPrecioDesc(
+                                proxima.values().stream().map(FuncionEvento::getId).toList())
+                        .stream()
+                        .filter(t -> TipoEntrada.ESTADO_ACTIVO.equals(t.getEstado()))
+                        .collect(Collectors.groupingBy(t -> t.getFuncion().getId()));
+
         return eventos.stream()
                 .map(e -> {
                     FuncionEvento f = proxima.get(e.getId());
+                    List<TipoEntrada> tipos = f == null ? List.of() : tiposPorFuncion.getOrDefault(f.getId(), List.of());
+                    // La lista llega ordenada por precio descendente
+                    var max = tipos.isEmpty() ? null : tipos.get(0);
+                    var min = tipos.isEmpty() ? null : tipos.get(tipos.size() - 1);
                     return new EventoResumenDto(
                             e.getId(),
                             e.getNombre(),
@@ -56,14 +74,32 @@ public class CatalogoService {
                             imagenes.get(e.getId()),
                             f == null ? null : f.getFechaInicio(),
                             f == null ? null : f.getRecinto().getNombre(),
-                            f == null ? null : f.getRecinto().getCiudad());
+                            f == null ? null : f.getRecinto().getCiudad(),
+                            segmento(e.getDescripcion(), 0),
+                            segmento(e.getDescripcion(), 1),
+                            min == null ? null : min.getPrecio(),
+                            max == null ? null : max.getPrecio(),
+                            max == null ? null : max.getMoneda());
                 })
                 .toList();
     }
 
+    // La descripcion demo tiene el formato "Artista | Genero | Recinto, Ciudad"
+    private static String segmento(String descripcion, int indice) {
+        if (descripcion == null) {
+            return null;
+        }
+        String[] partes = descripcion.split("\\|");
+        return partes.length > indice && partes.length > 1 ? partes[indice].trim() : null;
+    }
+
     public EventoDetalleDto evento(Long id) {
         Evento e = eventoRepository.findPublicadoById(id)
-                .orElseThrow(() -> ApiException.noEncontrado("Evento no encontrado"));
+                .orElseThrow(() -> {
+                    log.warn("Evento no encontrado o no publicado: idEvento={}", id);
+                    return ApiException.noEncontrado("Evento no encontrado");
+                });
+        log.debug("Detalle de evento: idEvento={}", id);
         LocalDateTime ahora = ahora();
 
         List<FuncionEvento> funciones = funcionEventoRepository.proximasPorEventos(List.of(id), ahora);
@@ -93,14 +129,23 @@ public class CatalogoService {
     }
 
     public List<AsientoDto> asientos(Long idFuncion) {
+        LocalDateTime ahora = ahora();
         FuncionEvento f = funcionEventoRepository.findById(idFuncion)
                 .filter(x -> FuncionEvento.ESTADO_PROGRAMADO.equals(x.getEstado()))
-                .orElseThrow(() -> ApiException.noEncontrado("Funcion no encontrada"));
+                .orElseThrow(() -> {
+                    log.warn("Funcion no encontrada o no programada: idFuncion={}", idFuncion);
+                    return ApiException.noEncontrado("Funcion no encontrada");
+                });
+        log.debug("Consultando mapa de asientos: idFuncion={}", idFuncion);
         return asientoFuncionRepository.mapaDeFuncion(f.getId()).stream()
                 .map(a -> new AsientoDto(a.getId(), a.getSeccion(), a.getFila(), a.getNumero(),
                         a.getTipoEntrada().getId(), a.getTipoEntrada().getNombre(), a.getTipoEntrada().getPrecio(),
                         a.getTipoEntrada().getMoneda(),
-                        AsientoFuncion.ESTADO_DISPONIBLE.equals(a.getEstado())))
+                        AsientoFuncion.ESTADO_DISPONIBLE.equals(a.getEstado())
+                                || (AsientoFuncion.ESTADO_RESERVADO.equals(a.getEstado())
+                                        && a.getReserva() != null
+                                        && a.getReserva().getExpiraEn() != null
+                                        && !a.getReserva().getExpiraEn().isAfter(ahora))))
                 .toList();
     }
 

@@ -21,6 +21,7 @@ import lombok.Setter;
 public class AsientoFuncion {
 
     public static final String ESTADO_DISPONIBLE = "DISPONIBLE";
+    public static final String ESTADO_RESERVADO = "RESERVADO";
     public static final String ESTADO_VENDIDO = "VENDIDO";
 
     @Id
@@ -35,6 +36,10 @@ public class AsientoFuncion {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_tipo_entrada")
     private TipoEntrada tipoEntrada;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_orden_reserva")
+    private OrdenCompra reserva;
 
     @Column(name = "seccion", nullable = false, length = 50)
     private String seccion;
