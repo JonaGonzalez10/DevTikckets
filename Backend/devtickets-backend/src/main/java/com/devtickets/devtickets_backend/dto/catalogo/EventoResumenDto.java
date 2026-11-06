@@ -1,5 +1,6 @@
 package com.devtickets.devtickets_backend.dto.catalogo;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record EventoResumenDto(
@@ -9,4 +10,9 @@ public record EventoResumenDto(
         String imagenPrincipal,
         LocalDateTime proximaFecha,
         String recinto,
-        String ciudad) {}
+        String ciudad,
+        String artista,
+        String genero,
+        BigDecimal precioMin,
+        BigDecimal precioMax,
+        String moneda) {}

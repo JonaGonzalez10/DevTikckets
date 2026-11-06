@@ -1,0 +1,21 @@
+﻿id,nombre_evento,artista_organizador,categoria,recinto,ciudad,estado,fecha,hora,precio_min,precio_max,imagen
+1,Ecos de Neón,Lía Vértice,Concierto - Pop Electrónico,Estadio GNP Seguros,Ciudad de México,Ciudad de México,2026-10-17,20:00,450,2200,01_ecos_de_neón.png
+2,Horizonte Cero,Nómada Solar,Concierto - Rock Alternativo,Palacio de los Deportes,Ciudad de México,Ciudad de México,2026-10-31,21:00,400,1800,02_horizonte_cero.png
+3,Noches de Mercurio,Bruno Lumen,Concierto - Indie Pop,Auditorio Nacional,Ciudad de México,Ciudad de México,2026-11-07,20:00,500,2000,03_noches_de_mercurio.png
+4,Frecuencia 404,Kira Byte,Concierto - Electrónica,Arena CDMX,Ciudad de México,Ciudad de México,2026-11-07,20:00,500,2300,04_frecuencia_404.png
+5,Ciudad de Cristal,Prisma Norte,Concierto - Synth-pop,Pepsi Center,Ciudad de México,Ciudad de México,2026-11-14,21:00,350,1500,05_ciudad_de_cristal.png
+6,Ritmos del Fuego,Alma Ríos,Concierto - Pop Latino,Auditorio Telmex,Zapopan,Jalisco,2026-11-21,20:00,400,1700,06_ritmos_del_fuego.png
+7,Volver al Sol,Atlas del Sur,Concierto - Rock en Español,Arena VFG,Tlajomulco de Zúñiga,Jalisco,2026-12-05,20:00,350,1600,07_volver_al_sol.png
+8,Código Norte,Los Circuitos,Concierto - Rock / Pop,Arena Monterrey,Monterrey,Nuevo León,2026-12-12,21:00,400,1800,08_código_norte.png
+9,Horizonte Regio,Mateo Fénix,Concierto - Música Urbana,Estadio BBVA,Guadalupe,Nuevo León,2026-12-19,20:00,450,2100,09_horizonte_regio.png
+10,Luz de Invierno,Valeria Nox,Concierto - Balada / Pop,Auditorio GNP Seguros,Puebla,Puebla,2027-01-09,20:00,350,1400,10_luz_de_invierno.png
+11,Dinosaurios de México,Museo del Desierto,Exposición - Ciencia,Museo del Desierto,Saltillo,Coahuila,2026-10-15,10:00,180,320,11_dinosaurios_de_méxico.png
+12,Luz Eterna,Experiencia Inmersiva,Exposición - Arte,Museo Franz Mayer,Ciudad de México,Ciudad de México,2026-11-08,10:00,200,350,12_luz_eterna.png
+13,La Última Función,Compañía Luna Roja,Teatro,Teatro de la Ciudad Esperanza Iris,Ciudad de México,Ciudad de México,2026-11-22,19:00,250,600,13_la_última_función.png
+14,El Lago Etéreo,Ballet Contemporáneo,Danza - Ballet,Palacio de Bellas Artes,Ciudad de México,Ciudad de México,2026-11-29,18:00,300,900,14_el_lago_etéreo.png
+15,Risas de Media Noche,Diego Torres,Comedia - Stand Up,Auditorio Citibanamex,Monterrey,Nuevo León,2026-12-06,21:00,350,900,15_risas_de_media_noche.png
+16,Futuro Real,Conferencia Internacional,Conferencia - Tecnología,Centro Citibanamex,Ciudad de México,Ciudad de México,2026-12-10,09:00,500,1500,16_futuro_real.png
+17,México Esports Cup,Organización MX,Deportes - Esports,Expo Guadalajara,Guadalajara,Jalisco,2026-12-13,10:00,250,800,17_méxico_esports_cup.png
+18,Noche de Leyendas,Liga Mexicana de Lucha,Deportes - Lucha Libre,Arena México,Ciudad de México,Ciudad de México,2026-12-20,20:30,300,1200,18_noche_de_leyendas.png
+19,Sabores de México,Festival Gastronómico,Festival - Gastronomía,Parque Fundidora,Monterrey,Nuevo León,2027-01-16,11:00,150,400,19_sabores_de_méxico.png
+20,Animeverse México,Convención Anime,Cultura Pop - Anime / Cómic,WTC Ciudad de México,Ciudad de México,Ciudad de México,2027-01-23,10:00,200,600,20_animeverse_méxico.png

@@ -135,6 +135,7 @@ CREATE TABLE ordenes_compra (
   monto_total DECIMAL(10,2) NOT NULL,
   creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   pagado_en DATETIME NULL,
+  expira_en DATETIME NULL,
   PRIMARY KEY (id_orden),
   UNIQUE KEY uq_ordenes_numero (numero_orden),
   KEY idx_ordenes_usuario_fecha (id_usuario, creado_en),
@@ -162,18 +163,47 @@ CREATE TABLE detalles_orden (
     ON DELETE RESTRICT
 );
 
+CREATE TABLE asientos_funcion (
+  id_asiento BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  id_funcion BIGINT UNSIGNED NOT NULL,
+  id_tipo_entrada BIGINT UNSIGNED NOT NULL,
+  id_orden_reserva BIGINT UNSIGNED NULL,
+  seccion VARCHAR(50) NOT NULL,
+  fila VARCHAR(10) NOT NULL,
+  numero SMALLINT UNSIGNED NOT NULL,
+  estado VARCHAR(20) NOT NULL DEFAULT 'DISPONIBLE',
+  PRIMARY KEY (id_asiento),
+  UNIQUE KEY uq_asientos_funcion_lugar (id_funcion, seccion, fila, numero),
+  KEY idx_asientos_funcion_estado (id_funcion, estado),
+  KEY idx_asientos_tipo_entrada (id_tipo_entrada),
+  CONSTRAINT fk_asientos_funcion
+    FOREIGN KEY (id_funcion) REFERENCES funciones_evento (id_funcion)
+    ON DELETE RESTRICT,
+  CONSTRAINT fk_asientos_tipo_entrada
+    FOREIGN KEY (id_tipo_entrada) REFERENCES tipos_entrada (id_tipo_entrada)
+    ON DELETE RESTRICT,
+  CONSTRAINT fk_asientos_orden_reserva
+    FOREIGN KEY (id_orden_reserva) REFERENCES ordenes_compra (id_orden)
+    ON DELETE RESTRICT
+);
+
 CREATE TABLE entradas (
   id_entrada BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   id_detalle_orden BIGINT UNSIGNED NOT NULL,
+  id_asiento BIGINT UNSIGNED NULL,
   codigo_entrada VARCHAR(80) NOT NULL,
   estado VARCHAR(20) NOT NULL DEFAULT 'VALIDA',
   emitida_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   usada_en DATETIME NULL,
   PRIMARY KEY (id_entrada),
   UNIQUE KEY uq_entradas_codigo (codigo_entrada),
+  UNIQUE KEY uq_entradas_asiento (id_asiento),
   KEY idx_entradas_detalle_orden (id_detalle_orden),
   CONSTRAINT fk_entradas_detalle_orden
     FOREIGN KEY (id_detalle_orden) REFERENCES detalles_orden (id_detalle_orden)
+    ON DELETE RESTRICT,
+  CONSTRAINT fk_entradas_asiento
+    FOREIGN KEY (id_asiento) REFERENCES asientos_funcion (id_asiento)
     ON DELETE RESTRICT
 );
 
