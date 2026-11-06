@@ -1,0 +1,45 @@
+<h1 class="titulo">Mis entradas</h1>
+
+@if (cargando()) {
+  <p class="estado">Cargando tus compras…</p>
+} @else if (error()) {
+  <p class="estado">No se pudieron cargar tus compras. Intenta de nuevo más tarde.</p>
+} @else if (pagadas().length === 0) {
+  <p class="estado">Aún no has comprado entradas. <a routerLink="/">Ver eventos</a></p>
+} @else {
+  @for (orden of pagadas(); track orden.id) {
+    <article class="orden">
+      <header>
+        <div>
+          <h2>{{ orden.evento }}</h2>
+          <p class="meta">{{ utc(orden.fechaFuncion) | date: 'd MMM y · HH:mm' }} ·
+            <a class="lugar" [href]="mapsUrl(orden.recinto)" target="_blank" rel="noopener noreferrer">📍 {{ orden.recinto }}</a></p>
+          <p class="meta">
+            Orden {{ orden.numeroOrden }} · {{ dinero(orden.montoTotal, orden.moneda) }}
+            @if (orden.referenciaPago) { · Ref. {{ orden.referenciaPago }} }
+          </p>
+        </div>
+        <button type="button" class="btn" (click)="alternarMapa(orden)">
+          {{ abierta() === orden.id ? 'Ocultar mapa' : 'Ver mapa de asientos' }}
+        </button>
+      </header>
+
+      <ul class="entradas">
+        @for (e of orden.entradas; track e.codigoEntrada) {
+          <li>
+            <strong>{{ e.seccion }} · Fila {{ e.fila }} · Asiento {{ e.numero }}</strong>
+            <span>{{ e.tipoEntrada }} · Código {{ e.codigoEntrada }} · {{ e.estado }}</span>
+          </li>
+        }
+      </ul>
+
+      @if (abierta() === orden.id) {
+        @if (cargandoMapa()) {
+          <p class="estado">Cargando mapa…</p>
+        } @else {
+          <app-mapa-asientos [asientos]="asientos()" [propios]="idsPropios(orden)" />
+        }
+      }
+    </article>
+  }
+}

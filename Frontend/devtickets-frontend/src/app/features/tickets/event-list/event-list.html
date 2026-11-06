@@ -1,0 +1,182 @@
+<h1 class="titulo">Próximos eventos</h1>
+
+@if (cargando()) {
+  <p class="estado">Cargando eventos…</p>
+} @else if (error()) {
+  <p class="estado">No se pudieron cargar los eventos. Intenta de nuevo más tarde.</p>
+} @else if (eventos().length === 0) {
+  <p class="estado">No hay eventos disponibles.</p>
+} @else {
+  <section class="grid">
+    @for (e of eventos(); track e.id) {
+      <article class="card">
+        <div class="imagen">
+          @if (e.imagenPrincipal) {
+            <img [src]="imagen(e.imagenPrincipal)" [alt]="e.nombre + (e.artista ? ' — ' + e.artista : '')" loading="lazy" />
+          }
+          <span class="categoria">{{ e.genero ? e.categoria + ' · ' + e.genero : e.categoria }}</span>
+        </div>
+        <div class="info">
+          <h2 class="sr-only">{{ e.nombre }}</h2>
+          @if (e.proximaFecha) {
+            <p class="fecha">{{ utc(e.proximaFecha) | date: 'EEE d MMM y · HH:mm' }}</p>
+          }
+          <p class="meta">
+            <a class="lugar" [href]="mapsUrl(e.recinto, e.ciudad)" target="_blank" rel="noopener noreferrer"
+               [attr.aria-label]="'Abrir ' + e.recinto + ' en Google Maps'">📍 {{ e.recinto }} · {{ e.ciudad }}</a>
+          </p>
+          @if (e.precioMin !== null && e.precioMax !== null && e.moneda) {
+            <p class="meta precio">Desde {{ dinero(e.precioMin, e.moneda) }}@if (e.precioMax !== e.precioMin) { hasta {{ dinero(e.precioMax, e.moneda) }} }</p>
+          }
+          <div class="pie">
+            <button type="button" class="btn-comprar" (click)="abrirCompra(e)">Ver entradas</button>
+          </div>
+        </div>
+      </article>
+    }
+  </section>
+}
+
+  @if (eventoCompra() || cargandoCompra() || errorCompra()) {
+    <div class="modal-fondo" (click)="cerrarCompra()"></div>
+    <section class="compra" role="dialog" aria-modal="true" aria-labelledby="titulo-compra">
+      <header class="compra-cabecera">
+        <div>
+          <h2 id="titulo-compra">{{ eventoCompra()?.nombre ?? 'Entradas' }}</h2>
+          <p class="meta">Selecciona una función y los asientos que deseas reservar.</p>
+        </div>
+        <button type="button" class="btn-cerrar" aria-label="Cerrar" (click)="cerrarCompra()">✕</button>
+      </header>
+
+      @if (cargandoCompra()) {
+        <p class="estado">Cargando funciones y disponibilidad…</p>
+      }
+
+      @if (eventoCompra(); as detalle) {
+        <label class="selector-funcion">
+          Función
+          <select [value]="funcionSeleccionada()?.id ?? ''" (change)="cambiarFuncion($event)">
+            <option value="">Selecciona una función</option>
+            @for (funcion of detalle.funciones; track funcion.id) {
+              <option [value]="funcion.id" [disabled]="!funcion.ventaAbierta">
+                {{ utc(funcion.fechaInicio) | date: 'd MMM y · HH:mm' }} · {{ funcion.recinto }}
+                {{ funcion.ventaAbierta ? '' : '· Venta cerrada' }}
+              </option>
+            }
+          </select>
+        </label>
+
+        @if (funcionSeleccionada(); as funcion) {
+          <p class="meta">
+            <a class="lugar" [href]="mapsUrl(funcion.recinto, funcion.ciudad, funcion.direccion)" target="_blank" rel="noopener noreferrer">
+              📍 {{ funcion.recinto }} · {{ funcion.ciudad }} · {{ funcion.direccion }}
+            </a>
+          </p>
+        }
+      }
+
+      @if (errorCompra()) {
+        <p class="error" role="alert">{{ errorCompra() }}</p>
+        @if (!autenticado()) {
+          <button type="button" class="btn-comprar" (click)="irAIniciarSesion()">Iniciar sesión</button>
+        }
+      }
+
+      @if (funcionSeleccionada() && !cargandoCompra() && !orden()) {
+        @if (filas().length === 0) {
+          <p class="estado">No hay asientos disponibles para esta función.</p>
+        } @else {
+          <ul class="zonas">
+            @for (z of zonas(); track z.nombre) {
+              <li><strong>{{ z.nombre }}</strong> · {{ dinero(z.precio, z.moneda) }} por asiento</li>
+            }
+          </ul>
+          <app-mapa-asientos
+            [asientos]="asientos()"
+            [seleccionados]="idsSeleccionados()"
+            [interactivo]="true"
+            (elegir)="toggleAsiento($event)" />
+
+          <ul class="desglose">
+            @for (d of desgloseSeleccion(); track d.tipo) {
+              <li>{{ d.cantidad }} × {{ d.tipo }} — {{ dinero(d.subtotal, d.moneda) }}</li>
+            }
+          </ul>
+          <div class="resumen-compra">
+            <p>{{ idsSeleccionados().length }} asiento(s) · {{ dinero(totalSeleccionado(), filas()[0].asientos[0].moneda) }}</p>
+            <button type="button" class="btn-comprar" [disabled]="procesando() || !idsSeleccionados().length" (click)="reservar()">
+              {{ procesando() ? 'Reservando…' : 'Reservar por 10 minutos' }}
+            </button>
+          </div>
+        }
+      }
+
+      @if (orden(); as reserva) {
+        @if (reserva.estado === 'PENDIENTE') {
+          <div class="pago">
+            <h3>Reserva creada</h3>
+            <p>Completa el pago simulado antes de que termine el tiempo de reserva.</p>
+            <p class="temporizador" role="timer">Tiempo restante: {{ tiempoReserva() }}</p>
+            @if (!segundosRestantes()) {
+              <p class="error" role="alert">La reserva venció. Actualiza el mapa para elegir otros asientos.</p>
+            }
+            <p>Total: <strong>{{ dinero(reserva.montoTotal, reserva.moneda) }}</strong></p>
+
+            <form [formGroup]="pagoForm" (ngSubmit)="confirmarPago()" novalidate>
+              <p class="aviso-pago">Demostración: el pago es simulado. No ingreses datos de una tarjeta real.</p>
+              <label>
+                Número de tarjeta de prueba
+                <input inputmode="numeric" autocomplete="off" formControlName="numeroTarjeta" />
+                @if (pagoForm.controls.numeroTarjeta.touched && pagoForm.controls.numeroTarjeta.invalid) {
+                  <small class="campo-error">Ingresa entre 13 y 19 dígitos.</small>
+                }
+              </label>
+              <label>
+                Titular
+                <input autocomplete="off" formControlName="titular" />
+                @if (pagoForm.controls.titular.touched && pagoForm.controls.titular.invalid) {
+                  <small class="campo-error">Ingresa entre 3 y 100 caracteres.</small>
+                }
+              </label>
+              <div class="campos-pago">
+                <label>
+                  Expiración (MM/AA)
+                  <input placeholder="12/29" autocomplete="off" formControlName="expiracion" />
+                  @if (pagoForm.controls.expiracion.touched && pagoForm.controls.expiracion.invalid) {
+                    <small class="campo-error">Usa el formato MM/AA.</small>
+                  }
+                </label>
+                <label>
+                  CVV de prueba
+                  <input inputmode="numeric" autocomplete="off" formControlName="cvv" />
+                  @if (pagoForm.controls.cvv.touched && pagoForm.controls.cvv.invalid) {
+                    <small class="campo-error">Ingresa 3 o 4 dígitos.</small>
+                  }
+                </label>
+              </div>
+              <button type="submit" class="btn-comprar" [disabled]="procesando() || !segundosRestantes()">
+                {{ procesando() ? 'Procesando…' : 'Confirmar pago simulado' }}
+              </button>
+              @if (!segundosRestantes()) {
+                <button type="button" class="btn-cerrar" (click)="volverAlMapa()">Volver al mapa de asientos</button>
+              }
+            </form>
+          </div>
+        } @else {
+          <div class="compra-exitosa" role="status">
+            <h3>¡Compra confirmada!</h3>
+            <p>Orden {{ reserva.numeroOrden }} · {{ dinero(reserva.montoTotal, reserva.moneda) }}</p>
+            <ul>
+              @for (entrada of reserva.entradas; track entrada.codigoEntrada) {
+                <li>{{ entrada.seccion }} · Fila {{ entrada.fila }} · Asiento {{ entrada.numero }} · Código {{ entrada.codigoEntrada }}</li>
+              }
+            </ul>
+            @if (asientos().length) {
+              <app-mapa-asientos [asientos]="asientos()" [propios]="idsComprados()" />
+            }
+            <button type="button" class="btn-comprar" (click)="irAMisEntradas()">Ver mis entradas</button>
+          </div>
+        }
+      }
+    </section>
+  }

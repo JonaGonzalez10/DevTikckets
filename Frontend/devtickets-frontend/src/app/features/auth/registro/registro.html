@@ -1,0 +1,55 @@
+<section class="login">
+  <form class="tarjeta" [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+    <h1>Crear cuenta</h1>
+
+    <label>
+      Nombre
+      <input type="text" formControlName="nombre" autocomplete="given-name" />
+      @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+        <small class="campo-error">El nombre es obligatorio</small>
+      }
+    </label>
+
+    <label>
+      Apellido
+      <input type="text" formControlName="apellido" autocomplete="family-name" />
+      @if (form.controls.apellido.touched && form.controls.apellido.invalid) {
+        <small class="campo-error">El apellido es obligatorio</small>
+      }
+    </label>
+
+    <label>
+      Correo electrónico
+      <input type="email" formControlName="correoElectronico" autocomplete="email" />
+      @if (form.controls.correoElectronico.touched && form.controls.correoElectronico.invalid) {
+        <small class="campo-error">Ingresa un correo válido</small>
+      }
+    </label>
+
+    <label>
+      Teléfono (opcional)
+      <input type="tel" formControlName="telefono" autocomplete="tel" />
+      @if (form.controls.telefono.touched && form.controls.telefono.invalid) {
+        <small class="campo-error">Entre 7 y 30 caracteres: números, +, (, ), - o espacios</small>
+      }
+    </label>
+
+    <label>
+      Contraseña
+      <input type="password" formControlName="contrasena" autocomplete="new-password" />
+      @if (form.controls.contrasena.touched && form.controls.contrasena.invalid) {
+        <small class="campo-error">La contraseña debe tener entre 8 y 72 caracteres</small>
+      }
+    </label>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="cargando()">
+      {{ cargando() ? 'Creando cuenta...' : 'Registrarse' }}
+    </button>
+
+    <p class="alterno">¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+  </form>
+</section>

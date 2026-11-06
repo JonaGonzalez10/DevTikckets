@@ -1,0 +1,15 @@
+@if (categorias().length > 0) {
+  <nav class="categorias" aria-label="Categorías">
+    @for (c of categorias(); track c.id) {
+      <button
+        type="button"
+        class="categoria"
+        [class.activa]="filtro.seleccionadas().includes(c.id)"
+        [attr.aria-pressed]="filtro.seleccionadas().includes(c.id)"
+        (click)="filtro.alternar(c.id)"
+      >
+        {{ c.nombre }}
+      </button>
+    }
+  </nav>
+}

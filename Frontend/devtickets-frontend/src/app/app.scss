@@ -1,0 +1,19 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.contenido {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 140px 24px 48px;
+}
+
+@media (max-width: 600px) {
+  .contenido {
+    padding: 150px 16px 32px;
+  }
+}

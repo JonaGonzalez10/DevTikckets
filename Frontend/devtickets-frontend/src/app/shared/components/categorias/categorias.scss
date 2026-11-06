@@ -1,0 +1,36 @@
+.categorias {
+  position: fixed;
+  inset: 64px 0 auto 0;
+  height: 52px;
+  display: flex;
+  justify-content: safe center;
+  align-items: center;
+  gap: 8px;
+  padding: 0 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  z-index: 9;
+  overflow-x: auto;
+}
+
+.categoria {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 14px;
+  white-space: nowrap;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &:hover {
+    border-color: var(--accent);
+  }
+
+  &.activa {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+}

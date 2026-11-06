@@ -1,0 +1,51 @@
+<div class="mapa">
+  <div class="escenario">ESCENARIO</div>
+  <div class="filas">
+    @for (fila of filas(); track fila.seccion + fila.fila) {
+      <div class="fila">
+        <span class="etiqueta">{{ fila.seccion }} {{ fila.fila }}</span>
+        <div class="bloque">
+          @for (a of fila.izquierda; track a.id) {
+            <button
+              type="button"
+              class="asiento"
+              [class.propio]="esPropio(a.id)"
+              [class.seleccionado]="esSeleccionado(a.id)"
+              [class.ocupado]="!esPropio(a.id) && !a.disponible"
+              [class.estatico]="!interactivo()"
+              [disabled]="!interactivo() || !a.disponible"
+              [attr.title]="titulo(a)"
+              [attr.aria-label]="'Asiento ' + a.seccion + ' fila ' + a.fila + ' número ' + a.numero + ', ' + titulo(a)"
+              (click)="pulsar(a)">{{ a.numero }}</button>
+          }
+        </div>
+        <span class="pasillo" aria-hidden="true"></span>
+        <div class="bloque">
+          @for (a of fila.derecha; track a.id) {
+            <button
+              type="button"
+              class="asiento"
+              [class.propio]="esPropio(a.id)"
+              [class.seleccionado]="esSeleccionado(a.id)"
+              [class.ocupado]="!esPropio(a.id) && !a.disponible"
+              [class.estatico]="!interactivo()"
+              [disabled]="!interactivo() || !a.disponible"
+              [attr.title]="titulo(a)"
+              [attr.aria-label]="'Asiento ' + a.seccion + ' fila ' + a.fila + ' número ' + a.numero + ', ' + titulo(a)"
+              (click)="pulsar(a)">{{ a.numero }}</button>
+          }
+        </div>
+      </div>
+    }
+  </div>
+  <ul class="leyenda">
+    <li><span class="muestra"></span> Disponible</li>
+    @if (interactivo()) {
+      <li><span class="muestra seleccionado"></span> Seleccionado</li>
+    }
+    <li><span class="muestra ocupado"></span> Ocupado</li>
+    @if (propios().length) {
+      <li><span class="muestra propio"></span> Tu asiento</li>
+    }
+  </ul>
+</div>

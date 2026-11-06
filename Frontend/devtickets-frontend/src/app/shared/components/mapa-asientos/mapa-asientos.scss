@@ -1,0 +1,149 @@
+:host {
+  --tam: 34px;
+  display: block;
+}
+
+.mapa {
+  margin: 16px 0;
+  overflow-x: auto;
+}
+
+.escenario {
+  width: min(420px, 80%);
+  margin: 0 auto 24px;
+  padding: 8px;
+  border-radius: 0 0 50% 50%;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.filas {
+  display: grid;
+  justify-content: center;
+  gap: 8px;
+  width: max-content;
+  min-width: 100%;
+}
+
+.fila {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.etiqueta {
+  flex: 0 0 64px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+.bloque {
+  display: flex;
+  gap: 6px;
+}
+
+.pasillo {
+  flex: 0 0 28px;
+}
+
+.asiento,
+.muestra {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tam);
+  height: var(--tam);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px 8px 4px 4px;
+  background: var(--surface-2);
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+}
+
+.asiento {
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--accent);
+  }
+
+  &.estatico {
+    cursor: default;
+  }
+
+  &:disabled {
+    color: inherit;
+  }
+}
+
+.asiento.seleccionado,
+.muestra.seleccionado {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.asiento.ocupado,
+.muestra.ocupado {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.asiento.propio,
+.muestra.propio {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 16px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 13px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .muestra {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+  }
+}
+
+@media (max-width: 600px) {
+  :host {
+    --tam: 28px;
+  }
+
+  .etiqueta {
+    flex-basis: 48px;
+    font-size: 11px;
+  }
+
+  .bloque {
+    gap: 4px;
+  }
+
+  .pasillo {
+    flex-basis: 16px;
+  }
+}

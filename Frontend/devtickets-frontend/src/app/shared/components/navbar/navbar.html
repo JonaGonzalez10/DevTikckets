@@ -1,0 +1,16 @@
+<header class="navbar">
+  @if (auth.sesion(); as s) {
+    <div class="usuario">
+      <span class="nombre">{{ s.nombre }} {{ s.apellido }}</span>
+      <a routerLink="/mis-entradas" class="btn-login">Mis entradas</a>
+      <button type="button" class="btn-login" (click)="cerrarSesion()">Cerrar sesión</button>
+    </div>
+  } @else {
+    <div class="usuario">
+      <a routerLink="/login" class="btn-login">Iniciar sesión</a>
+      <a routerLink="/registro" class="btn-login">Registrarse</a>
+    </div>
+  }
+  <a routerLink="/" class="logo">Dev<span>Tickets</span></a>
+  <div class="espaciador"></div>
+</header>

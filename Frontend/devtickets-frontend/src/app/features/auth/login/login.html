@@ -1,0 +1,29 @@
+<section class="login">
+  <form class="tarjeta" [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+    <h1>Iniciar sesión</h1>
+
+    <label>
+      Correo electrónico
+      <input type="email" formControlName="correoElectronico" autocomplete="email" />
+      @if (form.controls.correoElectronico.touched && form.controls.correoElectronico.invalid) {
+        <small class="campo-error">Ingresa un correo válido</small>
+      }
+    </label>
+
+    <label>
+      Contraseña
+      <input type="password" formControlName="contrasena" autocomplete="current-password" />
+      @if (form.controls.contrasena.touched && form.controls.contrasena.invalid) {
+        <small class="campo-error">La contraseña es obligatoria</small>
+      }
+    </label>
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="cargando()">
+      {{ cargando() ? 'Ingresando...' : 'Ingresar' }}
+    </button>
+  </form>
+</section>
