@@ -36,21 +36,19 @@ public class OrdenService {
     public OrdenDto crear(String correo, CrearOrdenRequest req) {
         Usuario usuario = usuarioRepository.findByCorreoElectronico(correo)
                 .orElseThrow(() -> {
-                    log.warn("Creacion de reserva: usuario autenticado no existe en BD");
+                    log.warn("Creacion de reserva rechazada: usuario no encontrado");
                     return ApiException.noEncontrado("Usuario no encontrado");
                 });
         LocalDateTime ahora = ahora();
-        log.info("Creando reserva: idUsuario={}, idFuncion={}, asientosSolicitados={}",
-                usuario.getId(), req.idFuncion(), req.idsAsiento().size());
 
         FuncionEvento funcion = funcionEventoRepository.findDetalleById(req.idFuncion())
                 .filter(f -> FuncionEvento.ESTADO_PROGRAMADO.equals(f.getEstado()))
                 .orElseThrow(() -> {
-                    log.warn("Creacion de reserva rechazada: funcion no encontrada idFuncion={}", req.idFuncion());
+                    log.warn("Creacion de reserva rechazada: funcion no encontrada");
                     return ApiException.noEncontrado("Funcion no encontrada");
                 });
         if (!funcion.ventaAbierta(ahora)) {
-            log.warn("Creacion de reserva rechazada: venta cerrada idFuncion={}", funcion.getId());
+            log.warn("Creacion de reserva rechazada: venta cerrada");
             throw ApiException.conflicto("La venta de esta funcion no esta abierta");
         }
 
@@ -63,17 +61,17 @@ public class OrdenService {
         }
         List<AsientoFuncion> asientos = asientoFuncionRepository.findParaCompra(ids, funcion.getId());
         if (asientos.size() != ids.size()) {
-            log.warn("Creacion de reserva rechazada: asientos ajenos a la funcion idFuncion={}", funcion.getId());
+            log.warn("Creacion de reserva rechazada: asientos no pertenecen a la funcion");
             throw ApiException.solicitudInvalida("Hay asientos que no pertenecen a la funcion");
         }
         for (AsientoFuncion asiento : asientos) {
             TipoEntrada tipo = asiento.getTipoEntrada();
             if (!disponible(asiento, ahora)) {
-                log.warn("Creacion de reserva rechazada: asiento no disponible idAsiento={}", asiento.getId());
+                log.warn("Creacion de reserva rechazada: asiento no disponible");
                 throw ApiException.conflicto("El asiento " + etiqueta(asiento) + " ya no esta disponible");
             }
             if (!TipoEntrada.ESTADO_ACTIVO.equals(tipo.getEstado()) || !tipo.ventaAbierta(ahora)) {
-                log.warn("Creacion de reserva rechazada: venta cerrada idTipoEntrada={}", tipo.getId());
+                log.warn("Creacion de reserva rechazada: tipo de entrada no disponible");
                 throw ApiException.conflicto("La venta del tipo de entrada " + tipo.getNombre() + " no esta abierta");
             }
         }
@@ -81,7 +79,7 @@ public class OrdenService {
         Set<String> monedas = new HashSet<>();
         asientos.forEach(asiento -> monedas.add(asiento.getTipoEntrada().getMoneda()));
         if (monedas.size() > 1) {
-            log.warn("Creacion de reserva rechazada: monedas mezcladas idFuncion={}", funcion.getId());
+            log.warn("Creacion de reserva rechazada: monedas incompatibles");
             throw ApiException.solicitudInvalida("Los asientos deben compartir la misma moneda");
         }
 
@@ -110,7 +108,7 @@ public class OrdenService {
         ordenCompraRepository.saveAndFlush(orden);
 
         if (asientoFuncionRepository.reservarDisponibles(ids, funcion.getId(), orden.getId()) != ids.size()) {
-            log.warn("Creacion de reserva rechazada: conflicto al reservar asientos idFuncion={}", funcion.getId());
+            log.warn("Creacion de reserva rechazada: conflicto al reservar asientos");
             throw ApiException.conflicto("Alguno de los asientos acaba de ser reservado, intenta de nuevo");
         }
 
@@ -123,8 +121,7 @@ public class OrdenService {
         pago.setCreadoEn(ahora);
         pagoRepository.save(pago);
 
-        log.info("Reserva creada: idOrden={}, numeroOrden={}, asientos={}, expiraEn={}",
-                orden.getId(), orden.getNumeroOrden(), ids.size(), orden.getExpiraEn());
+        log.info("Reserva creada para el evento '{}'", funcion.getEvento().getNombre());
         return aDto(orden, funcion, null);
     }
 
@@ -187,8 +184,7 @@ public class OrdenService {
         pagoRepository.save(pago);
 
         FuncionEvento funcion = orden.getDetalles().get(0).getTipoEntrada().getFuncion();
-        log.info("Pago simulado aprobado: idOrden={}, numeroOrden={}, entradas={}",
-                orden.getId(), orden.getNumeroOrden(), cantidadEsperada);
+        log.info("Compra completada para el evento '{}'", funcion.getEvento().getNombre());
         return aDto(orden, funcion, pago.getReferenciaProveedor());
     }
 
@@ -199,7 +195,7 @@ public class OrdenService {
                     log.warn("Listado de ordenes: usuario autenticado no existe en BD");
                     return ApiException.noEncontrado("Usuario no encontrado");
                 });
-        log.debug("Listando ordenes: idUsuario={}", usuario.getId());
+        log.debug("Ordenes consultadas");
         return ordenCompraRepository.findByUsuarioIdOrderByCreadoEnDesc(usuario.getId()).stream()
                 .map(orden -> {
                     FuncionEvento funcion = orden.getDetalles().get(0).getTipoEntrada().getFuncion();

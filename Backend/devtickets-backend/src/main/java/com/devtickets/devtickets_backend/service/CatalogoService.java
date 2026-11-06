@@ -30,15 +30,14 @@ public class CatalogoService {
         List<CategoriaDto> resultado = categoriaRepository.findAllByOrderByNombreAsc().stream()
                 .map(c -> new CategoriaDto(c.getId(), c.getNombre()))
                 .toList();
-        log.debug("Categorias consultadas: total={}", resultado.size());
+        log.debug("Categorias consultadas");
         return resultado;
     }
 
     public List<EventoResumenDto> eventos(Long categoriaId, String q) {
         String texto = q == null ? "" : q.trim();
         List<Evento> eventos = eventoRepository.buscarPublicados(categoriaId, texto);
-        log.debug("Eventos publicados encontrados: total={}, filtroCategoria={}, conTexto={}",
-                eventos.size(), categoriaId, !texto.isEmpty());
+        log.debug("Eventos publicados consultados");
         if (eventos.isEmpty()) {
             return List.of();
         }
@@ -61,9 +60,10 @@ public class CatalogoService {
                         .collect(Collectors.groupingBy(t -> t.getFuncion().getId()));
 
         return eventos.stream()
+                .filter(e -> proxima.containsKey(e.getId()))
                 .map(e -> {
                     FuncionEvento f = proxima.get(e.getId());
-                    List<TipoEntrada> tipos = f == null ? List.of() : tiposPorFuncion.getOrDefault(f.getId(), List.of());
+                    List<TipoEntrada> tipos = tiposPorFuncion.getOrDefault(f.getId(), List.of());
                     // La lista llega ordenada por precio descendente
                     var max = tipos.isEmpty() ? null : tipos.get(0);
                     var min = tipos.isEmpty() ? null : tipos.get(tipos.size() - 1);
@@ -72,9 +72,9 @@ public class CatalogoService {
                             e.getNombre(),
                             e.getCategoria() == null ? null : e.getCategoria().getNombre(),
                             imagenes.get(e.getId()),
-                            f == null ? null : f.getFechaInicio(),
-                            f == null ? null : f.getRecinto().getNombre(),
-                            f == null ? null : f.getRecinto().getCiudad(),
+                            f.getFechaInicio(),
+                            f.getRecinto().getNombre(),
+                            f.getRecinto().getCiudad(),
                             segmento(e.getDescripcion(), 0),
                             segmento(e.getDescripcion(), 1),
                             min == null ? null : min.getPrecio(),
@@ -96,10 +96,10 @@ public class CatalogoService {
     public EventoDetalleDto evento(Long id) {
         Evento e = eventoRepository.findPublicadoById(id)
                 .orElseThrow(() -> {
-                    log.warn("Evento no encontrado o no publicado: idEvento={}", id);
+                    log.warn("Consulta de evento rechazada: no encontrado o no publicado");
                     return ApiException.noEncontrado("Evento no encontrado");
                 });
-        log.debug("Detalle de evento: idEvento={}", id);
+        log.debug("Detalle de evento consultado");
         LocalDateTime ahora = ahora();
 
         List<FuncionEvento> funciones = funcionEventoRepository.proximasPorEventos(List.of(id), ahora);
@@ -116,7 +116,7 @@ public class CatalogoService {
 
         List<FuncionDto> funcionesDto = funciones.stream()
                 .map(f -> new FuncionDto(f.getId(), f.getFechaInicio(), f.getFechaFin(), f.ventaAbierta(ahora),
-                        f.getRecinto().getNombre(), f.getRecinto().getDireccion(), f.getRecinto().getCiudad(),
+                        f.getRecinto().getNombre(), direccion(f.getRecinto()), f.getRecinto().getCiudad(),
                         tipos.getOrDefault(f.getId(), List.of())))
                 .toList();
 
@@ -133,10 +133,10 @@ public class CatalogoService {
         FuncionEvento f = funcionEventoRepository.findById(idFuncion)
                 .filter(x -> FuncionEvento.ESTADO_PROGRAMADO.equals(x.getEstado()))
                 .orElseThrow(() -> {
-                    log.warn("Funcion no encontrada o no programada: idFuncion={}", idFuncion);
+                    log.warn("Consulta de asientos rechazada: funcion no encontrada o no programada");
                     return ApiException.noEncontrado("Funcion no encontrada");
                 });
-        log.debug("Consultando mapa de asientos: idFuncion={}", idFuncion);
+        log.debug("Mapa de asientos consultado");
         return asientoFuncionRepository.mapaDeFuncion(f.getId()).stream()
                 .map(a -> new AsientoDto(a.getId(), a.getSeccion(), a.getFila(), a.getNumero(),
                         a.getTipoEntrada().getId(), a.getTipoEntrada().getNombre(), a.getTipoEntrada().getPrecio(),
@@ -147,6 +147,11 @@ public class CatalogoService {
                                         && a.getReserva().getExpiraEn() != null
                                         && !a.getReserva().getExpiraEn().isAfter(ahora))))
                 .toList();
+    }
+
+    private static String direccion(Recinto recinto) {
+        String direccion = recinto.getDireccion();
+        return direccion == null || direccion.isBlank() ? recinto.getNombre() : direccion;
     }
 
     private static LocalDateTime ahora() {
