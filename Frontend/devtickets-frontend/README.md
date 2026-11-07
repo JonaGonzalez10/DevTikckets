@@ -36,6 +36,10 @@ ng build
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
+## Deploying to Vercel
+
+Set the Vercel project Root Directory to `Frontend/devtickets-frontend`. Use `npm run build` as the build command and `dist/devtickets-frontend/browser` as the output directory. Ensure any output directory override in the Vercel project settings matches this path. The `vercel.json` rewrite serves the built `index.html` for Angular routes.
+
 ## Running unit tests
 
 To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
