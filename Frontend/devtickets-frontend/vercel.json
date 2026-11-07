@@ -1,5 +1,5 @@
 {
-  "outputDirectory": "dist/devtickets-frontend",
+  "outputDirectory": "dist/devtickets-frontend/browser",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
